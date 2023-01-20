@@ -98,6 +98,7 @@ int timer_queue::insert_periodic(const struct timeval &interval,
   timeradd(&now,&interval,&t->next);
   pthread_mutex_lock(&lock);
   timer_id = t->id = ++next_id;
+  timer_map[timer_id] = t;
   queue.push(t);
   pthread_mutex_unlock(&lock);
   pthread_cond_signal(&cond);
@@ -111,8 +112,10 @@ void timer_queue::cancel(int id)
 
   pthread_mutex_lock(&lock);
   t = timer_map[id];
-  if (!t)
+  if (!t) {
+    pthread_mutex_unlock(&lock);
     return;
+  }
   t->canceled = true;
   t->callback = NULL;
   t->arg = NULL;

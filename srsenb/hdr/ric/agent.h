@@ -31,7 +31,7 @@ typedef enum {
 } agent_state_t;
 
 #define RIC_AGENT_RECONNECT_DELAY_INC 5
-#define RIC_AGENT_RECONNECT_DELAY_MAX 60
+#define RIC_AGENT_RECONNECT_DELAY_MAX 10
 
 class agent : public srslte::thread
 {
@@ -56,6 +56,8 @@ public:
   bool is_state_stale(int seconds);
   void set_ric_id(uint32_t id,uint16_t mcc,uint16_t mnc);
   ric::ran_function_t *lookup_ran_function(ran_function_id_t function_id);
+  bool add_subscription(ric::subscription_t *);
+  bool remove_subscription(ric::subscription_t *);
   ric::subscription_t *lookup_subscription(long request_id,long instance_id,
 					   ric::ran_function_id_t function_id);
   template <typename FwdRef>

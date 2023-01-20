@@ -122,7 +122,7 @@ int agent::init(const srsenb::all_args_t& args_,
 
   /* Add E2SM service models. */
 #ifdef ENABLE_RIC_AGENT_KPM
-  model = new kpm_model(this);
+  model = new ric::kpm::kpm_model(this);
   if (model->init()) {
     RIC_ERROR("failed to add E2SM-KPM model; aborting!\n");
     delete model;
@@ -308,6 +308,22 @@ ric::subscription_t *agent::lookup_subscription(
   }
 
   return nullptr;
+}
+
+bool agent::add_subscription(
+    ric::subscription_t *sub)
+{
+  subscriptions.push_back(sub);
+
+  return true;
+}
+
+bool agent::remove_subscription(
+    ric::subscription_t *sub)
+{
+  subscriptions.remove(sub);
+
+  return true;
 }
 
 /**
