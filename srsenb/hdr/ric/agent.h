@@ -42,6 +42,10 @@ public:
 	,
 	srsenb::enb_slicer_interface *enb__slicer_interface_
 #endif
+#ifdef ENABLE_ZYLINIUM
+	,
+	srsenb::enb_zylinium_interface *enb__zylinium_interface_
+#endif
   );
   virtual ~agent();
 
@@ -73,6 +77,7 @@ public:
     srslte::log_filter ric;
     srslte::log_filter e2ap;
     srslte::log_filter e2sm;
+    srslte::log_ref e2sm_ref;
     srslte::LOG_LEVEL_ENUM ric_level;
     srslte::LOG_LEVEL_ENUM e2ap_level;
     srslte::LOG_LEVEL_ENUM e2sm_level;
@@ -84,6 +89,9 @@ public:
   srsenb::enb_metrics_interface *enb_metrics_interface;
 #ifdef ENABLE_SLICER
   srsenb::enb_slicer_interface *enb_slicer_interface;
+#endif
+#ifdef ENABLE_ZYLINIUM
+  srsenb::enb_zylinium_interface *enb_zylinium_interface;
 #endif
 
 private:

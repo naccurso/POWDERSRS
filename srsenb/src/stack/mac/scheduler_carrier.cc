@@ -326,6 +326,18 @@ void sched::carrier_sched::set_dl_tti_mask(uint8_t* tti_mask, uint32_t nof_sfs)
   sf_dl_mask.assign(tti_mask, tti_mask + nof_sfs);
 }
 
+#ifdef ENABLE_ZYLINIUM
+bool sched::carrier_sched::set_blocked_rbgmask(const rbgmask_t& mask)
+{
+  return dl_metric->set_blocked_rbgmask(mask);
+}
+
+bool sched::carrier_sched::set_blocked_prbmask(const prbmask_t& mask)
+{
+  return ul_metric->set_blocked_prbmask(mask);
+}
+#endif
+
 const cc_sched_result& sched::carrier_sched::generate_tti_result(tti_point tti_rx)
 {
   sf_sched*        tti_sched = get_sf_sched(tti_rx);

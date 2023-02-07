@@ -33,6 +33,11 @@ class dl_metric_rr : public sched::metric_dl
 public:
   void set_params(const sched_cell_params_t& cell_params_) final;
   void sched_users(std::map<uint16_t, sched_ue>& ue_db, dl_sf_sched_itf* tti_sched) final;
+#ifdef ENABLE_ZYLINIUM
+  bool set_blocked_rbgmask(const std::string& rbgmask_string);
+  rbgmask_t* get_rbgmask();
+  rbgmask_t* blocked_rbgmask = nullptr;
+#endif
 
 private:
   bool          find_allocation(uint32_t min_nof_rbg, uint32_t max_nof_rbg, rbgmask_t* rbgmask);
@@ -48,6 +53,11 @@ class ul_metric_rr : public sched::metric_ul
 public:
   void set_params(const sched_cell_params_t& cell_params_) final;
   void sched_users(std::map<uint16_t, sched_ue>& ue_db, ul_sf_sched_itf* tti_sched) final;
+#ifdef ENABLE_ZYLINIUM
+  bool set_blocked_prbmask(const std::string& prbmask_string);
+  prbmask_t* get_prbmask();
+  prbmask_t* blocked_prbmask = nullptr;
+#endif
 
 private:
   bool          find_allocation(uint32_t L, prb_interval* alloc);

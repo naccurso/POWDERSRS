@@ -68,6 +68,11 @@ public:
   std::map<std::string,std::vector<uint16_t>> get_slice_map() final;
 #endif
 
+#ifdef ENABLE_ZYLINIUM
+  bool set_blocked_rbgmask(rbgmask_t& mask);
+  bool set_blocked_prbmask(prbmask_t& mask);
+#endif
+
   /* PHY-MAC interface */
   int  sr_detected(uint32_t tti, uint16_t rnti) final { return mac.sr_detected(tti, rnti); }
   void rach_detected(uint32_t tti, uint32_t primary_cc_idx, uint32_t preamble_idx, uint32_t time_adv) final

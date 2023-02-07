@@ -118,6 +118,11 @@ public:
   slicer::slicer slicer;
 #endif
 
+#ifdef ENABLE_ZYLINIUM
+  bool set_blocked_rbgmask(rbgmask_t& mask);
+  bool set_blocked_prbmask(prbmask_t& mask);
+#endif
+
 private:
   static const uint32_t cfi = 3;
 

@@ -85,11 +85,14 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
     }
 
 #ifdef ENABLE_RIC_AGENT
+    ric_agent.reset(new ric::agent(logger,this
 #ifdef ENABLE_SLICER
-    ric_agent.reset(new ric::agent(logger,this,this));
-#else
-    ric_agent.reset(new ric::agent(logger,this));
+				   ,this
 #endif
+#ifdef ENABLE_ZYLINIUM
+				   ,this
+#endif
+				   ));
     if (!ric_agent) {
       srslte::console("Error creating RIC agent instance.\n");
       return SRSLTE_ERROR;
@@ -317,5 +320,17 @@ std::string enb::get_build_string()
   ss << "Built in " << get_build_mode() << " mode using " << get_build_info() << "." << std::endl;
   return ss.str();
 }
+
+#ifdef ENABLE_ZYLINIUM
+bool enb::set_blocked_rbgmask(srsenb::rbgmask_t& blocked_rbgmask)
+{
+  return stack->set_blocked_rbgmask(blocked_rbgmask);
+}
+
+bool enb::set_blocked_prbmask(srsenb::prbmask_t& blocked_prbmask)
+{
+  return stack->set_blocked_prbmask(blocked_prbmask);
+}
+#endif
 
 } // namespace srsenb
