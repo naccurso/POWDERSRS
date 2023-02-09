@@ -676,47 +676,44 @@ std::string hex_str_to_bin_str(const std::string& hex, int output_length, srslte
   return bin;
 }
 
-srsenb::rbgmask_t *hex_str_to_rbgmask(const std::string& s, srslte::log_ref log_h)
+bool hex_str_to_rbgmask(const std::string& s, srsenb::rbgmask_t& mask, srslte::log_ref log_h)
 {
   // rbgmask_string should be a hex string with the least significant binary bit as the first rbg
   std::string rbgmask_string_binary = hex_str_to_bin_str(s, 25, log_h);
   log_h->debug("rbgmask binary %s\n",rbgmask_string_binary.c_str());
 
-  srsenb::rbgmask_t* mask = new srsenb::rbgmask_t(25);
   for (int32_t i = 0; i < 25; i++) {
     if (rbgmask_string_binary[i] == '1')
-      mask->set(i);
+      mask.set(i);
     else if (rbgmask_string_binary[i] == '0')
-      mask->reset(i);
+      mask.reset(i);
     else {
       log_h->error("Illegal character %c at index %d in binary blocked_rbgmask string %s, hex version %s\n",
 		   rbgmask_string_binary[i],  i, rbgmask_string_binary.c_str(), s.c_str());
-      delete mask;
-      return nullptr;
+      return false;
     }
   }
-  return mask;
+  return true;
 }
 
-srsenb::prbmask_t *hex_str_to_prbmask(const std::string& s, srslte::log_ref log_h)
+bool hex_str_to_prbmask(const std::string& s, srsenb::prbmask_t& mask, srslte::log_ref log_h)
 {
   std::string prbmask_string_binary = hex_str_to_bin_str(s, 100, log_h);
+  log_h->debug("prbmask binary %s\n",prbmask_string_binary.c_str());
 
-  srsenb::prbmask_t* mask = new srsenb::prbmask_t((std::size_t)100);
   // Need to go backwards because the mask is in reverse order, for some reason
   for (int i = 0; i < 100; i++) {
     if (prbmask_string_binary[i] == '1')
-      mask->set(i);
+      mask.set(i);
     else if (prbmask_string_binary[i] == '0')
-      mask->reset(i);
+      mask.reset(i);
     else {
       log_h->error("Illegal character %c at index %d in binary blocked_prbmask string %s, hex version %s\n",
 		   prbmask_string_binary[i],  i, prbmask_string_binary.c_str(), s.c_str());
-      delete mask;
-      return nullptr;
+      return false;
     }
   }
-  return mask;
+  return true;
 }
 
 }

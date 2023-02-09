@@ -191,8 +191,8 @@ namespace sched_utils {
 
 const char* hex_char_to_bin(char c);
 std::string hex_str_to_bin_str(const std::string& hex, int output_length, srslte::log_ref log_h);
-srsenb::rbgmask_t *hex_str_to_rbgmask(const std::string& s, srslte::log_ref log_h);
-srsenb::prbmask_t *hex_str_to_prbmask(const std::string& s, srslte::log_ref log_h);
+bool hex_str_to_rbgmask(const std::string& s, srsenb::rbgmask_t& rbgmask , srslte::log_ref log_h);
+bool hex_str_to_prbmask(const std::string& s, srsenb::prbmask_t& prbmask, srslte::log_ref log_h);
 
 }
 
