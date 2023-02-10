@@ -579,6 +579,10 @@ void agent::stop()
 
   pending_tasks.push(agent_queue_id,[this]() { stop_impl(); });
   wait_thread_finish();
+  pending_tasks.erase_queue(agent_queue_id);
+  agent_queue_id = pending_tasks.add_queue();
+  set_state(RIC_INITIALIZED);
+  agent_thread_started = false;
 }
 
 void agent::stop_impl()
@@ -587,10 +591,6 @@ void agent::stop_impl()
 
   disconnect();
   rx_sockets->stop();
-  pending_tasks.erase_queue(agent_queue_id);
-  agent_queue_id = pending_tasks.add_queue();
-  set_state(RIC_INITIALIZED);
-  agent_thread_started = false;
 }
 
 /**
