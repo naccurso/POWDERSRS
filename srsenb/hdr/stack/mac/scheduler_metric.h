@@ -31,12 +31,17 @@ class dl_metric_rr : public sched::metric_dl
   const static int MAX_RBG = 25;
 
 public:
+  dl_metric_rr()
+#ifdef ENABLE_ZYLINIUM
+    : blocked_rbgmask(25)
+#endif
+  { };
   void set_params(const sched_cell_params_t& cell_params_) final;
   void sched_users(std::map<uint16_t, sched_ue>& ue_db, dl_sf_sched_itf* tti_sched) final;
 #ifdef ENABLE_ZYLINIUM
-  bool set_blocked_rbgmask(const std::string& rbgmask_string);
-  rbgmask_t* get_rbgmask();
-  rbgmask_t* blocked_rbgmask = nullptr;
+  bool set_blocked_rbgmask(const rbgmask_t& mask);
+  rbgmask_t* get_rbgmask() { return &blocked_rbgmask; };
+  rbgmask_t blocked_rbgmask;
 #endif
 
 private:
@@ -51,12 +56,17 @@ private:
 class ul_metric_rr : public sched::metric_ul
 {
 public:
+  ul_metric_rr()
+#ifdef ENABLE_ZYLINIUM
+      : blocked_prbmask(100)
+#endif
+  { };
   void set_params(const sched_cell_params_t& cell_params_) final;
   void sched_users(std::map<uint16_t, sched_ue>& ue_db, ul_sf_sched_itf* tti_sched) final;
 #ifdef ENABLE_ZYLINIUM
-  bool set_blocked_prbmask(const std::string& prbmask_string);
-  prbmask_t* get_prbmask();
-  prbmask_t* blocked_prbmask = nullptr;
+  bool set_blocked_prbmask(const prbmask_t& mask);
+  prbmask_t* get_prbmask() { return &blocked_prbmask; };
+  prbmask_t blocked_prbmask;
 #endif
 
 private:

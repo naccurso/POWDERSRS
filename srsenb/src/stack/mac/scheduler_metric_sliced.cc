@@ -42,22 +42,15 @@ void dl_metric_sliced::set_params(const sched_cell_params_t& cell_params_)
 }
 
 #ifdef ENABLE_ZYLINIUM
-rbgmask_t* dl_metric_sliced::get_rbgmask()
-{
-  return blocked_rbgmask;
-}
-
 bool dl_metric_sliced::set_blocked_rbgmask(const rbgmask_t& mask)
 {
-  if (!blocked_rbgmask || *blocked_rbgmask != mask) {
-    if (blocked_rbgmask)
-      delete blocked_rbgmask;
-    blocked_rbgmask = new rbgmask_t(mask);
-    log_h->info("SCHED: set blocked_rbgmask to %s\n", blocked_rbgmask->to_hex().c_str());
+  if (blocked_rbgmask != mask) {
+    blocked_rbgmask = mask;
+    log_h->info("SCHED: set blocked_rbgmask to %s\n", blocked_rbgmask.to_hex().c_str());
   }
   else
       log_h->debug("SCHED: blocked_rbgmask already set to %s; ignoring\n",
-		   blocked_rbgmask->to_hex().c_str());
+		   blocked_rbgmask.to_hex().c_str());
 
   return true;
 }
@@ -184,7 +177,7 @@ bool dl_metric_sliced::find_allocation(uint32_t min_nof_rbg, uint32_t max_nof_rb
   for (; i < localmask.size() and nof_alloc < max_nof_rbg; ++i) {
     if (localmask.test(i)
 #ifdef ENABLE_ZYLINIUM
-	&& !blocked_rbgmask->test(i)
+	&& !blocked_rbgmask.test(i)
 #endif
 	) {
       nof_alloc++;
@@ -283,22 +276,15 @@ void ul_metric_sliced::set_params(const sched_cell_params_t& cell_params_)
 #ifdef ENABLE_ZYLINIUM
 bool ul_metric_sliced::set_blocked_prbmask(const prbmask_t& mask)
 {
-  if (!blocked_prbmask || *blocked_prbmask != mask) {
-    if (blocked_prbmask)
-      delete blocked_prbmask;
-    blocked_prbmask = new prbmask_t(mask);
-    log_h->info("SCHED: set blocked_prbmask to %s\n", blocked_prbmask->to_hex().c_str());
+  if (blocked_prbmask != mask) {
+    blocked_prbmask = mask;
+    log_h->info("SCHED: set blocked_prbmask to %s\n", blocked_prbmask.to_hex().c_str());
   }
   else
     log_h->info("SCHED: blocked_prbmask already set to %s; ignoring\n",
-		blocked_prbmask->to_hex().c_str());
+		blocked_prbmask.to_hex().c_str());
 
   return true;
-}
-
-prbmask_t* ul_metric_sliced::get_prbmask()
-{
-  return blocked_prbmask;
 }
 #endif
 
@@ -355,7 +341,7 @@ bool ul_metric_sliced::find_allocation(uint32_t L, prb_interval* alloc)
   for (unsigned int i=0; i<used_rb->size(); i++){
     if(used_rb->test(i)
 #ifdef ENABLE_ZYLINIUM
-       || blocked_prbmask->test(i)
+       || blocked_prbmask.test(i)
 #endif
        )
       my_used_rb->set(i);

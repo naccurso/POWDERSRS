@@ -40,24 +40,17 @@ void dl_metric_rr::set_params(const sched_cell_params_t& cell_params_)
 }
 
 #ifdef ENABLE_ZYLINIUM
-rbgmask_t* dl_metric_rr::get_rbgmask()
-{
-  return blocked_rbgmask;
-}
-
 // rbgmask_string should be a hex string with the least significant binary bit as the first rbg
 bool dl_metric_rr::set_blocked_rbgmask(const rbgmask_t& mask)
 {
   // Only change mask if new mask is different
-  if (!blocked_rbgmask || *blocked_rbgmask != mask) {
-    if (blocked_rbgmask)
-      delete blocked_rbgmask;
-    blocked_rbgmask = new rbgmask_t(mask);
-    log_h->info("SCHED: set blocked_rbgmask to %s\n", blocked_rbgmask->to_hex().c_str());
+  if (blocked_rbgmask != mask) {
+    blocked_rbgmask = mask;
+    log_h->info("SCHED: set blocked_rbgmask to %s\n", blocked_rbgmask.to_hex().c_str());
   }
   else
       log_h->debug("SCHED: blocked_rbgmask already set to %s; ignoring\n",
-		   blocked_rbgmask->to_hex().c_str());
+		   blocked_rbgmask.to_hex().c_str());
   return true;
 }
 #endif
@@ -93,7 +86,11 @@ bool dl_metric_rr::find_allocation(uint32_t min_nof_rbg, uint32_t max_nof_rbg, r
 
   uint32_t i = 0, nof_alloc = 0;
   for (; i < localmask.size() and nof_alloc < max_nof_rbg; ++i) {
-    if (localmask.test(i) && !blocked_rbgmask->test(i)) {
+    if (localmask.test(i)
+#ifdef ENABLE_ZYLINIUM
+	&& !blocked_rbgmask.test(i)
+#endif
+	) {
       nof_alloc++;
     }
   }
@@ -191,21 +188,15 @@ void ul_metric_rr::set_params(const sched_cell_params_t& cell_params_)
 bool ul_metric_rr::set_blocked_prbmask(const prbmask_t& mask);
 {
   // Only change mask if new mask is different
-  if (!blocked_prbmask || *blocked_prbmask != mask) {
-    if (blocked_prbmask)
-      delete blocked_prbmask;
-    blocked_prbmask = new prbmask_t(mask);
-    log_h->info("Set blocked_prbmask to %s\n", blocked_prbmask->to_hex().c_str());
+  if (blocked_prbmask != mask) {
+    blocked_prbmask = mask;
+    log_h->info("Set blocked_prbmask to %s\n", blocked_prbmask.to_hex().c_str());
   }
   else
-    log_h->info("Ignored setting blocked_prbmask to %s because it is already set\n", blocked_prbmask->to_hex().c_str());
+    log_h->info("Ignored setting blocked_prbmask to %s because it is already set\n",
+		blocked_prbmask.to_hex().c_str());
 
   return true;
-}
-
-prbmask_t* ul_metric_rr::get_prbmask()
-{
-  return blocked_prbmask;
 }
 #endif
 
@@ -260,7 +251,11 @@ bool ul_metric_rr::find_allocation(uint32_t L, prb_interval* alloc)
   my_used_rb->reset();
 
   for (unsigned int i=0; i<used_rb->size(); i++){
-    if(used_rb->test(i) || blocked_prbmask->test(i))
+    if (used_rb->test(i)
+#ifdef ENABLE_ZYLINIUM
+	|| blocked_prbmask->test(i)
+#endif
+	)
       my_used_rb->set(i);
   }
 
