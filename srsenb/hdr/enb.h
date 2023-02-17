@@ -54,6 +54,9 @@
 #ifdef ENABLE_SLICER
 #include "srslte/interfaces/enb_slicer_interface.h"
 #endif
+#ifdef ENABLE_ZYLINIUM
+#include "srslte/interfaces/enb_zylinium_interface.h"
+#endif
 #ifdef ENABLE_RIC_AGENT
 #include "srsenb/hdr/ric/agent_defs.h"
 #endif
@@ -72,6 +75,8 @@ struct enb_args_t {
   uint32_t nof_ports;
   uint32_t transmission_mode;
   float    p_a;
+  std::string blocked_rbgmask;
+  std::string blocked_prbmask;
 };
 
 struct enb_files_t {
@@ -127,10 +132,12 @@ namespace srsenb {
   Main eNB class
 *******************************************************************************/
 
-#ifdef ENABLE_SLICER
-class enb : public enb_metrics_interface, enb_command_interface, enb_slicer_interface
-#else
 class enb : public enb_metrics_interface, enb_command_interface
+#ifdef ENABLE_SLICER
+	  , enb_slicer_interface
+#endif
+#ifdef ENABLE_ZYLINIUM
+	  , enb_zylinium_interface
 #endif
 {
 public:
@@ -160,6 +167,11 @@ public:
   bool slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list) override;
   bool slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list) override;
   std::map<std::string,std::vector<uint16_t>> get_slice_map() override;
+#endif
+
+#ifdef ENABLE_ZYLINIUM
+  bool set_blocked_rbgmask(srsenb::rbgmask_t& blocked_rbgmask);
+  bool set_blocked_prbmask(srsenb::prbmask_t& blocked_prbmask);
 #endif
 
 private:

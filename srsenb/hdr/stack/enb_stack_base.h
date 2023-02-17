@@ -25,6 +25,9 @@
 #ifdef ENABLE_SLICER
 #include "srsenb/hdr/stack/mac/slicer_defs.h"
 #endif
+#ifdef ENABLE_ZYLINIUM
+#include "srslte/interfaces/enb_zylinium_interface.h"
+#endif
 #include "srslte/interfaces/enb_interfaces.h"
 #include "srsue/hdr/stack/upper/gw.h"
 #include <string>
@@ -103,6 +106,11 @@ public:
   virtual bool slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list) = 0;
   virtual bool slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list) = 0;
   virtual std::map<std::string,std::vector<uint16_t>> get_slice_map() = 0;
+#endif
+
+#ifdef ENABLE_ZYLINIUM
+  virtual bool set_blocked_rbgmask(rbgmask_t& mask) = 0;
+  virtual bool set_blocked_prbmask(prbmask_t& mask) = 0;
 #endif
 
 };

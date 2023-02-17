@@ -73,6 +73,9 @@ public:
     /* Virtual methods for user metric calculation */
     virtual void set_params(const sched_cell_params_t& cell_params_)                          = 0;
     virtual void sched_users(std::map<uint16_t, sched_ue>& ue_db, dl_sf_sched_itf* tti_sched) = 0;
+#ifdef ENABLE_ZYLINIUM
+    virtual bool set_blocked_rbgmask(const rbgmask_t& mask) = 0;
+#endif
   };
 
   class metric_ul
@@ -82,6 +85,9 @@ public:
     /* Virtual methods for user metric calculation */
     virtual void set_params(const sched_cell_params_t& cell_params_)                          = 0;
     virtual void sched_users(std::map<uint16_t, sched_ue>& ue_db, ul_sf_sched_itf* tti_sched) = 0;
+#ifdef ENABLE_ZYLINIUM
+    virtual bool set_blocked_prbmask(const prbmask_t& mask) = 0;
+#endif
   };
 
   /*************************************************************
@@ -143,6 +149,11 @@ public:
   bool                                 slicer_workshare = true;
 #endif
 
+#ifdef ENABLE_ZYLINIUM
+  bool                                 set_blocked_rbgmask(rbgmask_t& mask);
+  bool                                 set_blocked_prbmask(prbmask_t& mask);
+#endif
+
   class carrier_sched;
 
 protected:
@@ -172,5 +183,20 @@ protected:
 };
 
 } // namespace srsenb
+
+#ifdef ENABLE_ZYLINIUM
+namespace srsenb {
+
+namespace sched_utils {
+
+const char* hex_char_to_bin(char c);
+std::string hex_str_to_bin_str(const std::string& hex, int output_length, srslte::log_ref log_h);
+bool hex_str_to_rbgmask(const std::string& s, srsenb::rbgmask_t& rbgmask , srslte::log_ref log_h);
+bool hex_str_to_prbmask(const std::string& s, srsenb::prbmask_t& prbmask, srslte::log_ref log_h);
+
+}
+
+}
+#endif
 
 #endif // SRSENB_SCHEDULER_H

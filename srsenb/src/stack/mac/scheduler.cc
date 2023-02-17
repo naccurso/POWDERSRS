@@ -555,6 +555,24 @@ prb_interval prb_interval::riv_to_prbs(uint32_t riv, uint32_t nof_prbs, int nof_
   return {rb_start, rb_start + l_crb};
 }
 
+#ifdef ENABLE_ZYLINIUM
+bool sched::set_blocked_rbgmask(rbgmask_t& mask)
+{
+  bool ret = true;
+  for (int i = 0; i < (int)carrier_schedulers.size(); i++)
+    ret |= carrier_schedulers[i]->set_blocked_rbgmask(mask);
+  return ret;
+}
+
+bool sched::set_blocked_prbmask(prbmask_t& mask)
+{
+  bool ret = true;
+  for (int i = 0; i < (int)carrier_schedulers.size(); i++)
+    ret |= carrier_schedulers[i]->set_blocked_prbmask(mask);
+  return ret;
+}
+#endif
+
 namespace sched_utils {
 
 void generate_cce_location(srslte_regs_t*   regs_,
@@ -584,3 +602,121 @@ void generate_cce_location(srslte_regs_t*   regs_,
 } // namespace sched_utils
 
 } // namespace srsenb
+
+#ifdef ENABLE_ZYLINIUM
+#include <stdio.h>
+#include <iostream>
+#include <sstream>
+#include <bitset>
+//For debugging
+#include <signal.h>
+
+namespace srsenb {
+
+namespace sched_utils {
+
+const char* hex_char_to_bin(char c)
+{
+  // TODO handle default / error
+  switch(toupper(c))
+  {
+  case '0': return "0000";
+  case '1': return "0001";
+  case '2': return "0010";
+  case '3': return "0011";
+  case '4': return "0100";
+  case '5': return "0101";
+  case '6': return "0110";
+  case '7': return "0111";
+  case '8': return "1000";
+  case '9': return "1001";
+  case 'A': return "1010";
+  case 'B': return "1011";
+  case 'C': return "1100";
+  case 'D': return "1101";
+  case 'E': return "1110";
+  case 'F': return "1111";
+  }
+  return "XXXX";
+}
+
+// Hex string should have least significant bit be the start of the mask
+std::string hex_str_to_bin_str(const std::string& hex, int output_length, srslte::log_ref log_h)
+{
+  if (hex[0] != '0' || hex[1] != 'x') {
+    log_h->error("Illegal mask string %s not given in hex format", hex.c_str());
+    return std::string();
+  }
+
+  if (((signed)hex.length() - 2) * 4 > output_length + 3) {
+    log_h->error("Illegal output length of %d requested from string %s of length %d original length %d",
+		 output_length, hex.c_str(), ((signed) hex.length()-2)*4, (signed) hex.length());
+    return std::string();
+  }
+
+  std::string bin_reversed;
+  std::string bin;
+
+  // Convert hex chars to binary
+  for (unsigned int i = 2; i < hex.length(); ++i)
+    bin_reversed += hex_char_to_bin(hex[i]);
+
+  // Reverse the binary string back
+  for (int i = (signed)bin_reversed.length() - 1; i >= 0; i--)
+    bin += bin_reversed[i];
+
+  // If the leading hex char has leading zeroes in the binary representation
+  // that should be cut off because of the output length, cut them off
+  bin = bin.substr(0, output_length);
+
+  // Zero pad the end if need be
+  for (int i = bin.length(); i < output_length; i++)
+    bin += "0";
+
+  return bin;
+}
+
+bool hex_str_to_rbgmask(const std::string& s, srsenb::rbgmask_t& mask, srslte::log_ref log_h)
+{
+  // rbgmask_string should be a hex string with the least significant binary bit as the first rbg
+  std::string rbgmask_string_binary = hex_str_to_bin_str(s, 25, log_h);
+  log_h->debug("rbgmask binary %s\n",rbgmask_string_binary.c_str());
+
+  for (int32_t i = 0; i < 25; i++) {
+    if (rbgmask_string_binary[i] == '1')
+      mask.set(i);
+    else if (rbgmask_string_binary[i] == '0')
+      mask.reset(i);
+    else {
+      log_h->error("Illegal character %c at index %d in binary blocked_rbgmask string %s, hex version %s\n",
+		   rbgmask_string_binary[i],  i, rbgmask_string_binary.c_str(), s.c_str());
+      return false;
+    }
+  }
+  return true;
+}
+
+bool hex_str_to_prbmask(const std::string& s, srsenb::prbmask_t& mask, srslte::log_ref log_h)
+{
+  std::string prbmask_string_binary = hex_str_to_bin_str(s, 100, log_h);
+  log_h->debug("prbmask binary %s\n",prbmask_string_binary.c_str());
+
+  // Need to go backwards because the mask is in reverse order, for some reason
+  for (int i = 0; i < 100; i++) {
+    if (prbmask_string_binary[i] == '1')
+      mask.set(i);
+    else if (prbmask_string_binary[i] == '0')
+      mask.reset(i);
+    else {
+      log_h->error("Illegal character %c at index %d in binary blocked_prbmask string %s, hex version %s\n",
+		   prbmask_string_binary[i],  i, prbmask_string_binary.c_str(), s.c_str());
+      return false;
+    }
+  }
+  return true;
+}
+
+}
+
+}
+#endif

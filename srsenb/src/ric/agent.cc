@@ -1,4 +1,5 @@
 #include <list>
+#include <memory>
 
 #include "srslte/common/common.h"
 #include "srslte/common/logger.h"
@@ -28,6 +29,9 @@
 #ifdef ENABLE_SLICER
 #include "srsenb/hdr/stack/mac/slicer_test_utils.h"
 #endif
+#ifdef ENABLE_ZYLINIUM
+#include "srsenb/hdr/ric/e2sm_zylinium.h"
+#endif
 
 namespace ric {
 
@@ -40,11 +44,18 @@ agent::agent(srslte::logger* logger_,
 	     ,
 	     srsenb::enb_slicer_interface *enb_slicer_interface_
 #endif
+#ifdef ENABLE_ZYLINIUM
+	     ,
+	     srsenb::enb_zylinium_interface *enb_zylinium_interface_
+#endif
   )
   : logger(logger_),
     enb_metrics_interface(enb_metrics_interface_),
 #ifdef ENABLE_SLICER
     enb_slicer_interface(enb_slicer_interface_),
+#endif
+#ifdef ENABLE_ZYLINIUM
+    enb_zylinium_interface(enb_zylinium_interface_),
 #endif
     thread("RIC")
 {
@@ -87,6 +98,7 @@ int agent::init(const srsenb::all_args_t& args_,
   log.e2sm.set_level(log.e2sm_level);
   log.e2sm.set_hex_limit(args.ric_agent.log_hex_limit);
   e2sm_xer_print = (log.e2sm_level >= srslte::LOG_LEVEL_DEBUG);
+  log.e2sm_ref = srslte::log_ref(new std::unique_ptr<srslte::log>(&log.e2sm));
 
   if (args.ric_agent.disabled) {
     set_state(RIC_DISABLED);
@@ -136,6 +148,17 @@ int agent::init(const srsenb::all_args_t& args_,
   model = new nexran_model(this);
   if (model->init()) {
     RIC_ERROR("failed to add E2SM-NEXRAN model; aborting!\n");
+    delete model;
+    return SRSLTE_ERROR;
+  }
+  service_models.push_back(model);
+  RIC_INFO("added model %s\n",model->name.c_str());
+#endif
+
+#ifdef ENABLE_ZYLINIUM
+  model = new zylinium_model(this);
+  if (model->init()) {
+    RIC_ERROR("failed to add E2SM-ZYLINIUM model; aborting!\n");
     delete model;
     return SRSLTE_ERROR;
   }
@@ -556,6 +579,10 @@ void agent::stop()
 
   pending_tasks.push(agent_queue_id,[this]() { stop_impl(); });
   wait_thread_finish();
+  pending_tasks.erase_queue(agent_queue_id);
+  agent_queue_id = pending_tasks.add_queue();
+  set_state(RIC_INITIALIZED);
+  agent_thread_started = false;
 }
 
 void agent::stop_impl()
@@ -564,10 +591,6 @@ void agent::stop_impl()
 
   disconnect();
   rx_sockets->stop();
-  pending_tasks.erase_queue(agent_queue_id);
-  agent_queue_id = pending_tasks.add_queue();
-  set_state(RIC_INITIALIZED);
-  agent_thread_started = false;
 }
 
 /**

@@ -290,4 +290,16 @@ std::map<std::string,std::vector<uint16_t>> enb_stack_lte::get_slice_map()
 }
 #endif
 
+#ifdef ENABLE_ZYLINIUM
+bool enb_stack_lte::set_blocked_rbgmask(rbgmask_t& blocked_rbgmask)
+{
+  return mac.set_blocked_rbgmask(blocked_rbgmask);
+}
+
+bool enb_stack_lte::set_blocked_prbmask(prbmask_t& blocked_prbmask)
+{
+  return mac.set_blocked_prbmask(blocked_prbmask);
+}
+#endif
+
 } // namespace srsenb

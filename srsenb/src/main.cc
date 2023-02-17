@@ -83,6 +83,10 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     ("enb.nof_ports",     bpo::value<uint32_t>(&args->enb.nof_ports)->default_value(1),            "Number of ports")
     ("enb.tm",            bpo::value<uint32_t>(&args->enb.transmission_mode)->default_value(1),    "Transmission mode (1-8)")
     ("enb.p_a",           bpo::value<float>(&args->enb.p_a)->default_value(0.0f),                  "Power allocation rho_a (-6, -4.77, -3, -1.77, 0, 1, 2, 3)")
+#ifdef ENABLE_ZYLINIUM
+    ("enb.blocked_rbgmask", bpo::value<string>(&args->enb.blocked_rbgmask)->default_value("0x0"), "Blocked RBG mask")
+    ("enb.blocked_prbmask", bpo::value<string>(&args->enb.blocked_prbmask)->default_value("0x0"), "Blocked PRB mask")
+#endif
 
     ("enb_files.sib_config", bpo::value<string>(&args->enb_files.sib_config)->default_value("sib.conf"), "SIB configuration files")
     ("enb_files.rr_config",  bpo::value<string>(&args->enb_files.rr_config)->default_value("rr.conf"),   "RR configuration files")

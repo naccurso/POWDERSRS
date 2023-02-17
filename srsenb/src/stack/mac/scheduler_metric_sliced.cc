@@ -41,6 +41,21 @@ void dl_metric_sliced::set_params(const sched_cell_params_t& cell_params_)
   log_h  = srslte::logmap::get("MAC ");
 }
 
+#ifdef ENABLE_ZYLINIUM
+bool dl_metric_sliced::set_blocked_rbgmask(const rbgmask_t& mask)
+{
+  if (blocked_rbgmask != mask) {
+    blocked_rbgmask = mask;
+    log_h->info("SCHED: set blocked_rbgmask to %s\n", blocked_rbgmask.to_hex().c_str());
+  }
+  else
+      log_h->debug("SCHED: blocked_rbgmask already set to %s; ignoring\n",
+		   blocked_rbgmask.to_hex().c_str());
+
+  return true;
+}
+#endif
+
 void dl_metric_sliced::sched_users(std::map<uint16_t, sched_ue>& ue_db, dl_sf_sched_itf* tti_sched)
 {
   tti_alloc = tti_sched;
@@ -160,7 +175,11 @@ bool dl_metric_sliced::find_allocation(uint32_t min_nof_rbg, uint32_t max_nof_rb
 
   uint32_t i = 0, nof_alloc = 0;
   for (; i < localmask.size() and nof_alloc < max_nof_rbg; ++i) {
-    if (localmask.test(i)) {
+    if (localmask.test(i)
+#ifdef ENABLE_ZYLINIUM
+	&& !blocked_rbgmask.test(i)
+#endif
+	) {
       nof_alloc++;
     }
   }
@@ -254,6 +273,21 @@ void ul_metric_sliced::set_params(const sched_cell_params_t& cell_params_)
   log_h  = srslte::logmap::get("MAC ");
 }
 
+#ifdef ENABLE_ZYLINIUM
+bool ul_metric_sliced::set_blocked_prbmask(const prbmask_t& mask)
+{
+  if (blocked_prbmask != mask) {
+    blocked_prbmask = mask;
+    log_h->info("SCHED: set blocked_prbmask to %s\n", blocked_prbmask.to_hex().c_str());
+  }
+  else
+    log_h->info("SCHED: blocked_prbmask already set to %s; ignoring\n",
+		blocked_prbmask.to_hex().c_str());
+
+  return true;
+}
+#endif
+
 void ul_metric_sliced::sched_users(std::map<uint16_t, sched_ue>& ue_db, ul_sf_sched_itf* tti_sched)
 {
   tti_alloc   = tti_sched;
@@ -300,11 +334,24 @@ bool ul_metric_sliced::find_allocation(uint32_t L, prb_interval* alloc)
 {
   const prbmask_t* used_rb = &tti_alloc->get_ul_mask();
   *alloc                   = {};
+  prbmask_t new_used_rb(used_rb->size());
+  prbmask_t* my_used_rb = &new_used_rb;
+  my_used_rb->reset();
+
+  for (unsigned int i=0; i<used_rb->size(); i++){
+    if(used_rb->test(i)
+#ifdef ENABLE_ZYLINIUM
+       || blocked_prbmask.test(i)
+#endif
+       )
+      my_used_rb->set(i);
+  }
+
   for (uint32_t n = 0; n < used_rb->size() && alloc->length() < L; n++) {
-    if (not used_rb->test(n) && alloc->length() == 0) {
+    if (not my_used_rb->test(n) && alloc->length() == 0) {
       alloc->displace_to(n);
     }
-    if (not used_rb->test(n)) {
+    if (not my_used_rb->test(n)) {
       alloc->resize_by(1);
     } else if (alloc->length() > 0) {
       // avoid edges

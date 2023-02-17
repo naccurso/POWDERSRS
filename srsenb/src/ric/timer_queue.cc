@@ -40,7 +40,7 @@ void *timer_queue::run(void *arg)
 {
   timer_queue *tq = (timer_queue *)arg;
 
-  pthread_setname_np(pthread_self(),"KPM_TIMER_QUEUE");
+  pthread_setname_np(pthread_self(),tq->get_name().c_str());
 
   pthread_mutex_lock(&tq->lock);
   while (tq->running) {
@@ -96,6 +96,34 @@ int timer_queue::insert_periodic(const struct timeval &interval,
   t->callback = callback;
   t->arg = arg;
   timeradd(&now,&interval,&t->next);
+  pthread_mutex_lock(&lock);
+  timer_id = t->id = ++next_id;
+  timer_map[timer_id] = t;
+  queue.push(t);
+  pthread_mutex_unlock(&lock);
+  pthread_cond_signal(&cond);
+
+  return timer_id;
+}
+
+int timer_queue::insert_oneshot(const struct timeval &at,
+				timer_callback_t callback,void *arg)
+{
+  timer_t *t;
+  struct timeval now;
+  int timer_id;
+
+  gettimeofday(&now,NULL);
+  t = new timer_t{};  
+  t->repeats = false;
+  t->canceled = false;
+  t->callback = callback;
+  t->arg = arg;
+  timersub(&at,&now,&t->next);
+  if (t->next.tv_sec < 0 || t->next.tv_usec < 0) {
+    delete t;
+    return -1;
+  }
   pthread_mutex_lock(&lock);
   timer_id = t->id = ++next_id;
   timer_map[timer_id] = t;

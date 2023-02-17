@@ -1016,4 +1016,16 @@ bool mac::check_ue_exists(uint16_t rnti)
   return true;
 }
 
+#ifdef ENABLE_ZYLINIUM
+bool mac::set_blocked_rbgmask(rbgmask_t& mask)
+{
+  return scheduler.set_blocked_rbgmask(mask);
+}
+
+bool mac::set_blocked_prbmask(prbmask_t& mask)
+{
+  return scheduler.set_blocked_prbmask(mask);
+}
+#endif
+
 } // namespace srsenb

@@ -47,6 +47,11 @@ public:
   const cc_sched_result& generate_tti_result(srslte::tti_point tti_rx);
   int                    dl_rach_info(dl_sched_rar_info_t rar_info);
 
+#ifdef ENABLE_ZYLINIUM
+  bool                   set_blocked_rbgmask(const rbgmask_t& mask);
+  bool                   set_blocked_prbmask(const prbmask_t& mask);
+#endif
+
   // getters
   const ra_sched* get_ra_sched() const { return ra_sched_ptr.get(); }
   //! Get a subframe result for a given tti
