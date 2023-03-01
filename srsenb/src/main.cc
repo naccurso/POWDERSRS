@@ -251,6 +251,11 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     ("ric.agent.log_level", bpo::value<string>(&args->ric_agent.log_level),  "RIC agent log level")
     ("ric.agent.log_hex_limit",bpo::value<int>(&args->ric_agent.log_hex_limit), "RIC agent log hex dump limit")
 #endif
+
+#ifdef ENABLE_ZYLINIUM
+    ("zylinium.dl_mask", bpo::value<string>(&args->zylinium.dl_mask)->default_value("0x0"), "Default downlink RBG mask, as a hex string with least significant bit first.")
+    ("zylinium.ul_mask", bpo::value<string>(&args->zylinium.ul_mask)->default_value("0x0"), "Default uplink PRB mask, as a hex string with least significant bit first.")
+#endif
     ;
 
   // Positional options - config file location

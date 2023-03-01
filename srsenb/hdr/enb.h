@@ -108,6 +108,13 @@ struct general_args_t {
   std::string eea_pref_list;
 };
 
+#ifdef ENABLE_ZYLINIUM
+struct zylinium_args_t {
+  std::string dl_mask;
+  std::string ul_mask;
+};
+#endif
+
 struct all_args_t {
   enb_args_t        enb;
   enb_files_t       enb_files;
@@ -119,6 +126,9 @@ struct all_args_t {
   stack_args_t      stack;
 #ifdef ENABLE_RIC_AGENT
   ric::agent_args_t ric_agent;
+#endif
+#ifdef ENABLE_ZYLINIUM
+  zylinium_args_t   zylinium;
 #endif
 };
 

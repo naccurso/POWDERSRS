@@ -135,6 +135,19 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
     ric_agent = std::move(ric_agent);
 #endif
 
+#ifdef ENABLE_ZYLINIUM
+    srsenb::rbgmask_t def_rbgmask(25);
+    if (!srsenb::sched_utils::hex_str_to_rbgmask(args.zylinium.dl_mask, def_rbgmask, ric_agent->log.e2sm_ref)) {
+      ret = SRSLTE_ERROR;
+      srslte::console("zylinium: invalid default dl rbgmask\n");
+    }
+    srsenb::prbmask_t def_prbmask(100);
+    if (!srsenb::sched_utils::hex_str_to_prbmask(args.zylinium.ul_mask, def_prbmask, ric_agent->log.e2sm_ref)) {
+      ret = SRSLTE_ERROR;
+      srslte::console("zylinium: invalid default ul prbmask\n");
+    }
+#endif
+
   } else if (args.stack.type == "nr") {
 #ifdef HAVE_5GNR
     std::unique_ptr<srsenb::gnb_stack_nr> nr_stack(new srsenb::gnb_stack_nr(logger));
