@@ -141,11 +141,13 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
       ret = SRSLTE_ERROR;
       srslte::console("zylinium: invalid default dl rbgmask\n");
     }
+    set_blocked_rbgmask(def_rbgmask);
     srsenb::prbmask_t def_prbmask(100);
     if (!srsenb::sched_utils::hex_str_to_prbmask(args.zylinium.ul_mask, def_prbmask, ric_agent->log.e2sm_ref)) {
       ret = SRSLTE_ERROR;
       srslte::console("zylinium: invalid default ul prbmask\n");
     }
+    set_blocked_prbmask(def_prbmask);
 #endif
 
   } else if (args.stack.type == "nr") {
