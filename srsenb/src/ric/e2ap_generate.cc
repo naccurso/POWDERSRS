@@ -8,6 +8,7 @@
 
 #include "E2AP_E2AP-PDU.h"
 #include "E2AP_Cause.h"
+#include "E2AP_CauseRICrequest.h"
 #include "E2AP_ProtocolIE-Field.h"
 #include "E2AP_InitiatingMessage.h"
 #include "E2AP_SuccessfulOutcome.h"
@@ -171,7 +172,7 @@ int generate_ric_subscription_response(
     nai->value.choice.RICaction_NotAdmitted_Item.ricActionID = action->id;
     if (action->error_cause == 0) {
       action->error_cause = E2AP_Cause_PR_ricRequest;
-      action->error_cause_detail = E2AP_CauseRIC_unspecified;
+      action->error_cause_detail = E2AP_CauseRICrequest_unspecified;
     }
     nai->value.choice.RICaction_NotAdmitted_Item.cause.present = (E2AP_Cause_PR)action->error_cause;
     switch (nai->value.choice.RICaction_NotAdmitted_Item.cause.present) {
@@ -218,9 +219,6 @@ int generate_ric_subscription_failure(
   E2AP_E2AP_PDU_t pdu;
   E2AP_RICsubscriptionFailure_t *out;
   E2AP_RICsubscriptionFailure_IEs_t *ie;
-  E2AP_RICaction_NotAdmitted_ItemIEs_t *nai;
-  std::list<ric::action_t *>::iterator it;
-  ric::action_t *action;
 
   memset(&pdu, 0, sizeof(pdu));
   pdu.present = E2AP_E2AP_PDU_PR_unsuccessfulOutcome;
@@ -242,48 +240,6 @@ int generate_ric_subscription_failure(
   ie->criticality = E2AP_Criticality_reject;
   ie->value.present = E2AP_RICsubscriptionFailure_IEs__value_PR_RANfunctionID;
   ie->value.choice.RANfunctionID = rs->function_id;
-  ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
-
-  ie = (E2AP_RICsubscriptionFailure_IEs_t *)calloc(1,sizeof(*ie));
-  ie->id = E2AP_ProtocolIE_ID_id_RICactions_NotAdmitted;
-  ie->criticality = E2AP_Criticality_reject;
-  ie->value.present = E2AP_RICsubscriptionFailure_IEs__value_PR_RICaction_NotAdmitted_List;
-  for (it = rs->actions.begin(); it != rs->actions.end(); ++it) {
-    action = *it;
-    nai = (E2AP_RICaction_NotAdmitted_ItemIEs_t *)calloc(1,sizeof(*nai));
-    nai->id = E2AP_ProtocolIE_ID_id_RICaction_NotAdmitted_Item;
-    nai->criticality = E2AP_Criticality_reject;
-    nai->value.present = E2AP_RICaction_NotAdmitted_ItemIEs__value_PR_RICaction_NotAdmitted_Item;
-    nai->value.choice.RICaction_NotAdmitted_Item.ricActionID = action->id;
-    if (action->error_cause == 0) {
-      action->error_cause = E2AP_Cause_PR_ricRequest;
-      action->error_cause_detail = E2AP_CauseRIC_unspecified;
-    }
-    nai->value.choice.RICaction_NotAdmitted_Item.cause.present = (E2AP_Cause_PR)action->error_cause;
-    switch (nai->value.choice.RICaction_NotAdmitted_Item.cause.present) {
-    case E2AP_Cause_PR_NOTHING:
-      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.ricRequest = 0;
-      break;
-    case E2AP_Cause_PR_ricRequest:
-      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.ricRequest = action->error_cause_detail;
-      break;
-    case E2AP_Cause_PR_ricService:
-      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.ricService = action->error_cause_detail;
-      break;
-    case E2AP_Cause_PR_transport:
-      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.transport = action->error_cause_detail;
-      break;
-    case E2AP_Cause_PR_protocol:
-      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.protocol = action->error_cause_detail;
-      break;
-    case E2AP_Cause_PR_misc:
-      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.misc = action->error_cause_detail;
-      break;
-    default:
-      break;
-    }
-    ASN_SEQUENCE_ADD(&ie->value.choice.RICaction_NotAdmitted_List.list,nai);
-  }
   ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
 
   E2AP_XER_PRINT(NULL,&asn_DEF_E2AP_E2AP_PDU,&pdu);
@@ -586,7 +542,7 @@ int generate_indication(
 }
 
 int generate_ric_control_acknowledge(
-  ric::agent *agent,ric::control_t *rc,long status,
+  ric::agent *agent,ric::control_t *rc,
   uint8_t *outcome,ssize_t outcome_len,
   uint8_t **buffer,ssize_t *len)
 {
@@ -614,13 +570,6 @@ int generate_ric_control_acknowledge(
   ie->criticality = E2AP_Criticality_reject;
   ie->value.present = E2AP_RICcontrolAcknowledge_IEs__value_PR_RANfunctionID;
   ie->value.choice.RANfunctionID = rc->function_id;
-  ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
-
-  ie = (E2AP_RICcontrolAcknowledge_IEs_t *)calloc(1,sizeof(*ie));
-  ie->id = E2AP_ProtocolIE_ID_id_RICcontrolStatus;
-  ie->criticality = E2AP_Criticality_reject;
-  ie->value.present = E2AP_RICcontrolAcknowledge_IEs__value_PR_RICcontrolStatus;
-  ie->value.choice.RICcontrolStatus = status;
   ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
 
   if (outcome && outcome_len > 0) {

@@ -16,7 +16,6 @@
 #include "E2AP_RICactionType.h"
 #include "E2AP_Cause.h"
 #include "E2AP_RICindicationType.h"
-#include "E2AP_RICcontrolStatus.h"
 #include "E2SM_ZYLINIUM_RANfunction-Description.h"
 #include "E2SM_ZYLINIUM_E2SM-Zylinium-IndicationHeader.h"
 #include "E2SM_ZYLINIUM_E2SM-Zylinium-IndicationMessage.h"
@@ -399,7 +398,7 @@ void zylinium_model::handle_control(ric::control_t *rc)
     ASN_STRUCT_FREE_CONTENTS_ONLY(
       asn_DEF_E2SM_ZYLINIUM_E2SM_Zylinium_ControlOutcome,&outcome);
     ret = ric::e2ap::generate_ric_control_acknowledge(
-      agent,rc,E2AP_RICcontrolStatus_success,enc_outcome,enc_outcome_len,&buf,&len);
+      agent,rc,enc_outcome,enc_outcome_len,&buf,&len);
     if (enc_outcome)
       free(enc_outcome);
     if (ret) {
