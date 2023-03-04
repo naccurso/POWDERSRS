@@ -14,6 +14,7 @@
 #include "E2AP_SuccessfulOutcome.h"
 #include "E2AP_UnsuccessfulOutcome.h"
 #include "E2AP_E2setupRequest.h"
+#include "E2AP_E2nodeComponentConfigAddition-Item.h"
 
 namespace ric {
 namespace e2ap {
@@ -28,6 +29,7 @@ int generate_e2_setup_request(
   ric::ran_function_t *func;
   std::list<ric::service_model *>::iterator it;
   std::list<ric::ran_function_t *>::iterator it2;
+  E2AP_E2nodeComponentConfigAddition_ItemIEs_t *ncc_item_ie;
 
   memset(&pdu,0,sizeof(pdu));
   pdu.present = E2AP_E2AP_PDU_PR_initiatingMessage;
@@ -85,6 +87,39 @@ int generate_e2_setup_request(
 		       ran_function_item_ie);
     }
   }
+  ASN_SEQUENCE_ADD(&req->protocolIEs.list,ie);
+
+  ie = (E2AP_E2setupRequestIEs_t *)calloc(1,sizeof(*ie));
+  ie->id = E2AP_ProtocolIE_ID_id_E2nodeComponentConfigAddition;
+  ie->criticality = E2AP_Criticality_reject;
+  ie->value.present = E2AP_E2setupRequestIEs__value_PR_E2nodeComponentConfigAddition_List;
+  ncc_item_ie = (E2AP_E2nodeComponentConfigAddition_ItemIEs_t *)calloc(1,sizeof(*ncc_item_ie));
+  ncc_item_ie->id = E2AP_ProtocolIE_ID_id_E2nodeComponentConfigAddition_Item;
+  ncc_item_ie->criticality = E2AP_Criticality_reject;
+  ncc_item_ie->value.present = E2AP_E2nodeComponentConfigAddition_ItemIEs__value_PR_E2nodeComponentConfigAddition_Item;
+  ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentInterfaceType = \
+    E2AP_E2nodeComponentInterfaceType_s1;
+  ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.present = \
+    E2AP_E2nodeComponentID_PR_e2nodeComponentInterfaceTypeS1;
+  ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.choice.e2nodeComponentInterfaceTypeS1.mme_name.size = 4;
+  ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.choice.e2nodeComponentInterfaceTypeS1.mme_name.buf = \
+    (uint8_t *)malloc(ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.choice.e2nodeComponentInterfaceTypeS1.mme_name.size);
+  strncpy((char *)ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.choice.e2nodeComponentInterfaceTypeS1.mme_name.buf,
+	  "epc", strlen("epc"));
+  std::string s1req = agent->get_last_s1_setup_request();
+  std::string s1resp = agent->get_last_s1_setup_response();
+  if (s1req.size()) {
+    size_t slen = strlen(s1req.c_str());
+    ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentConfiguration.e2nodeComponentRequestPart.size = slen;
+    ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentConfiguration.e2nodeComponentRequestPart.buf = (uint8_t *)malloc(slen);
+    memcpy(ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentConfiguration.e2nodeComponentRequestPart.buf,
+	   s1req.c_str(),slen);
+  }
+  else {
+    ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentConfiguration.e2nodeComponentRequestPart.buf = NULL;
+    ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentConfiguration.e2nodeComponentRequestPart.size = 0;
+  }
+  ASN_SEQUENCE_ADD(&ie->value.choice.E2nodeComponentConfigAddition_List.list,ncc_item_ie);
   ASN_SEQUENCE_ADD(&req->protocolIEs.list,ie);
 
   E2AP_XER_PRINT(NULL,&asn_DEF_E2AP_E2AP_PDU,&pdu);

@@ -59,6 +59,8 @@ public:
   void set_state(agent_state_t state_);
   bool is_state_stale(int seconds);
   void set_ric_id(uint32_t id,uint16_t mcc,uint16_t mnc);
+  std::string get_last_s1_setup_request() { return last_s1_setup_request; };
+  std::string get_last_s1_setup_response() { return last_s1_setup_response; };
   ric::ran_function_t *lookup_ran_function(ran_function_id_t function_id);
   bool add_subscription(ric::subscription_t *);
   bool remove_subscription(ric::subscription_t *);
@@ -126,6 +128,9 @@ private:
   uint16_t remote_port;
   std::string local_ipv4_addr;
   uint16_t local_port;
+
+  std::string last_s1_setup_request;
+  std::string last_s1_setup_response;
 };
 
 #define RIC_DEBUG(msg,args...) log.ric.debug(msg,##args)
