@@ -18,8 +18,8 @@ Grab these URLs, and extract each into
 /tmp/srslte-ric/srsenb/src/ric/messages/generated (assuming your
 checkout of this repo is in `/tmp/srslte-ric`).
 
-    https://www.emulab.net/downloads/johnsond/profile-oai-oran/E2AP-generated-bindings.tar.gz
-    https://www.emulab.net/downloads/johnsond/profile-oai-oran/E2SM-KPM-generated-bindings.tar.gz
+    https://www.emulab.net/downloads/johnsond/profile-oai-oran/E2AP-v02.03-generated-bindings.tar.gz
+    https://www.emulab.net/downloads/johnsond/profile-oai-oran/E2SM-KPM-ext-generated-bindings.tar.gz
     https://www.emulab.net/downloads/johnsond/profile-oai-oran/E2SM-NI-generated-bindings.tar.gz
     https://www.emulab.net/downloads/johnsond/profile-oai-oran/E2SM-GNB-NRT-generated-bindings.tar.gz
 
@@ -29,7 +29,7 @@ paths, and not relative to the build tree.  Assuming your source
 checkout is in `/tmp/srslte-ric` as above:
 
     cmake ../ \
-        -DRIC_GENERATED_E2AP_BINDING_DIR=/tmp/srslte-ric/srsenb/src/ric/messages/generated/E2AP \
+        -DRIC_GENERATED_E2AP_BINDING_DIR=/tmp/srslte-ric/srsenb/src/ric/messages/generated/E2AP-v02.03 \
         -DRIC_GENERATED_E2SM_KPM_BINDING_DIR=/tmp/srslte-ric/srsenb/src/ric/messages/generated/E2SM-KPM \
         -DRIC_GENERATED_E2SM_NI_BINDING_DIR=/tmp/srslte-ric/srsenb/src/ric/messages/generated/E2SM-NI \
         -DRIC_GENERATED_E2SM_GNB_NRT_BINDING_DIR=/tmp/srslte-ric/srsenb/src/ric/messages/generated/E2SM-GNB-NRT
