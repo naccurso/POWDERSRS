@@ -186,6 +186,8 @@ int handle_ric_subscription_request(ric::agent *agent,uint32_t stream,
   }
 
   agent->add_subscription(rs);
+  E2AP_DEBUG(agent,"added subscription %ld/%ld/%ld\n",
+	     rs->request_id,rs->instance_id,rs->function_id);
 
   ret = generate_ric_subscription_response(agent,rs,&buf,&len);
   if (ret) {
