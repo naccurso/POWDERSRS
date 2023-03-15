@@ -101,11 +101,8 @@ int generate_e2_setup_request(
     E2AP_E2nodeComponentInterfaceType_s1;
   ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.present = \
     E2AP_E2nodeComponentID_PR_e2nodeComponentInterfaceTypeS1;
-  ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.choice.e2nodeComponentInterfaceTypeS1.mme_name.size = 4;
-  ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.choice.e2nodeComponentInterfaceTypeS1.mme_name.buf = \
-    (uint8_t *)malloc(ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.choice.e2nodeComponentInterfaceTypeS1.mme_name.size);
-  strncpy((char *)ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.choice.e2nodeComponentInterfaceTypeS1.mme_name.buf,
-	  "epc", strlen("epc"));
+  ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.choice.e2nodeComponentInterfaceTypeS1.mme_name.size = strlen("epc");
+  ncc_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.choice.e2nodeComponentInterfaceTypeS1.mme_name.buf = (uint8_t *)strdup("epc");
   std::string s1req = agent->get_last_s1_setup_request();
   std::string s1resp = agent->get_last_s1_setup_response();
   if (s1req.size()) {
