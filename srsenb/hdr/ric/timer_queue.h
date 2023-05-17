@@ -4,6 +4,7 @@
 #include <queue>
 #include <map>
 #include <ctime>
+#include <string>
 
 #include <sys/time.h>
 #include "pthread.h"

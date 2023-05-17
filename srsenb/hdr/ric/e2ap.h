@@ -3,6 +3,7 @@
 
 #include <list>
 #include <cstdint>
+#include <cstddef>
 
 /* RIC E2AP port. */
 #define E2AP_PORT 36422

@@ -26,6 +26,7 @@
 #include <functional>
 #include <limits>
 #include <vector>
+#include <cstddef>
 
 namespace srslte {
 
